@@ -10,33 +10,20 @@ export function ProductCard({ product }: ProductCardProps) {
   const Icon = getProductIcon(product.icon)
 
   return (
-    <div className="card" style={{ textAlign: "center", transform: "scale(1)", transition: "transform 0.2s" }}>
-      <div
-        style={{
-          backgroundColor: "#dbeafe",
-          width: "4rem",
-          height: "4rem",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          margin: "0 auto 1rem",
-        }}
-      >
-        <Icon style={{ width: "2rem", height: "2rem", color: "#2563eb" }} />
+    <div className="card group hover:scale-105 transition-transform duration-200">
+      <div className="text-center">
+        <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-200 transition-colors duration-200">
+          <Icon className="h-8 w-8 text-blue-600" />
+        </div>
+
+        <h3 className="text-xl font-bold text-gray-900 mb-3">{product.name}</h3>
+
+        <p className="text-gray-600 mb-6 text-sm leading-relaxed">{product.short_description}</p>
+
+        <Link href={`/products/${product.slug}`} className="btn-primary w-full inline-block text-center">
+          Оформить полис
+        </Link>
       </div>
-
-      <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#111827", marginBottom: "0.5rem" }}>
-        {product.name}
-      </h3>
-
-      <p style={{ color: "#6b7280", marginBottom: "1.5rem", fontSize: "0.875rem", lineHeight: "1.5" }}>
-        {product.short_description}
-      </p>
-
-      <Link href={`/products/${product.slug}`} className="btn-primary" style={{ width: "100%" }}>
-        Оформить
-      </Link>
     </div>
   )
 }
