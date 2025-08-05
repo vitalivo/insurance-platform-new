@@ -85,3 +85,10 @@ coverage.xml
 # Temporary files
 *.tmp
 *.temp
+
+# Node modules
+node_modules/
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
