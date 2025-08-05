@@ -20,6 +20,19 @@ class Product(BaseModel):
     icon = models.CharField('Иконка', max_length=50, help_text='Название иконки для фронтенда')
     is_featured = models.BooleanField('Рекомендуемый', default=False)
     sort_order = models.PositiveIntegerField('Порядок сортировки', default=0)
+    # Управление отображением
+    button_text = models.CharField('Текст кнопки', max_length=50, default='Оформить полис')
+    card_background_color = models.CharField('Цвет фона карточки', max_length=7, default='#ffffff')
+    icon_background_color = models.CharField('Цвет фона иконки', max_length=7, default='#dbeafe')
+    
+    # SEO и мета-данные
+    meta_title = models.CharField('SEO заголовок', max_length=200, blank=True)
+    meta_description = models.TextField('SEO описание', max_length=300, blank=True)
+    
+    # Дополнительный контент
+    benefits = models.JSONField('Преимущества', default=list, blank=True)
+    price_range = models.CharField('Диапазон цен', max_length=100, blank=True)
+    processing_time = models.CharField('Время оформления', max_length=50, blank=True)
     
     class Meta:
         verbose_name = 'Страховой продукт'

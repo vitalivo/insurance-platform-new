@@ -59,10 +59,14 @@ export function Header() {
 
             <div className="w-px h-8 bg-gray-300"></div>
 
-            <button className="btn-primary flex items-center space-x-2 px-4 py-2">
-              <User className="h-4 w-4" />
-              <span>Личный кабинет</span>
-            </button>
+          <Link 
+            href="http://localhost:8000/admin/" 
+            target="_blank"
+            className="btn-primary flex items-center space-x-2 px-4 py-2"
+          >
+            <User className="h-4 w-4" />
+            <span>Личный кабинет</span>
+          </Link>
           </div>
 
           {/* Mobile menu button */}

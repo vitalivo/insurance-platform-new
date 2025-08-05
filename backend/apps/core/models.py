@@ -23,3 +23,36 @@ class BaseModel(TimeStampedModel):
 
     class Meta:
         abstract = True
+
+# backend/apps/core/models.py
+class PageContent(models.Model):
+    page_name = models.CharField('Страница', max_length=100)
+    section_name = models.CharField('Секция', max_length=100)
+    content_key = models.CharField('Ключ контента', max_length=100)
+    content_value = models.TextField('Значение')
+    content_type = models.CharField('Тип', max_length=20, choices=[
+        ('text', 'Текст'),
+        ('html', 'HTML'),
+        ('number', 'Число'),
+        ('boolean', 'Да/Нет')
+    ])
+    
+    class Meta:
+        unique_together = ['page_name', 'section_name', 'content_key']
+        
+# backend/apps/core/models.py
+class SiteSettings(models.Model):
+    # Настройки отображения продуктов
+    products_per_row_desktop = models.IntegerField('Колонок на десктопе', default=3)
+    products_per_row_tablet = models.IntegerField('Колонок на планшете', default=2)
+    products_per_row_mobile = models.IntegerField('Колонок на мобильном', default=1)
+    
+    # Сортировка
+    products_sort_by = models.CharField('Сортировать по', max_length=20, choices=[
+        ('sort_order', 'Порядок'),
+        ('name', 'Название'),
+        ('created_at', 'Дата создания')
+    ], default='sort_order')
+    
+    show_featured_first = models.BooleanField('Показывать рекомендуемые первыми', default=True)        
+        

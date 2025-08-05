@@ -24,6 +24,8 @@ urlpatterns = [
     path('api/', include('apps.products.urls')),
     path('api/', include('apps.applications.urls')),
     path('api/', include('apps.accounts.urls')),
+    # Добавить в backend/config/urls.py:
+    path('api/', include('apps.core.urls')),
 ]
 
 # Serve media files in development
