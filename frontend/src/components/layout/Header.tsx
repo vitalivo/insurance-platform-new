@@ -7,10 +7,10 @@ import { Menu, X, Shield, Phone, User } from "lucide-react"
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  // Только рабочие ссылки
+  // Обновленная навигация с правильной ссылкой на продукты
   const navigation = [
     { name: "Главная", href: "/" },
-    { name: "Продукты", href: "#products" }, // Якорная ссылка на секцию
+    { name: "Продукты", href: "/products" }, // Изменено с "#products" на "/products"
     { name: "Преимущества", href: "#features" },
     { name: "О нас", href: "#about" },
   ]
@@ -56,17 +56,15 @@ export function Header() {
                 <div className="text-xs text-gray-500">Бесплатно по России</div>
               </div>
             </Link>
-
             <div className="w-px h-8 bg-gray-300"></div>
-
-          <Link 
-            href="http://localhost:8000/admin/" 
-            target="_blank"
-            className="btn-primary flex items-center space-x-2 px-4 py-2"
-          >
-            <User className="h-4 w-4" />
-            <span>Личный кабинет</span>
-          </Link>
+            <Link
+              href="http://localhost:8000/admin/"
+              target="_blank"
+              className="btn-primary flex items-center space-x-2 px-4 py-2"
+            >
+              <User className="h-4 w-4" />
+              <span>Личный кабинет</span>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -92,7 +90,6 @@ export function Header() {
                   {item.name}
                 </Link>
               ))}
-
               <div className="pt-4 border-t border-gray-200 space-y-3">
                 <Link
                   href="tel:+78001234567"
@@ -104,11 +101,14 @@ export function Header() {
                     <div className="text-sm text-gray-500">Бесплатно по России</div>
                   </div>
                 </Link>
-
-                <button className="w-full btn-primary flex items-center justify-center space-x-2 py-3">
+                <Link
+                  href="http://localhost:8000/admin/"
+                  target="_blank"
+                  className="w-full btn-primary flex items-center justify-center space-x-2 py-3"
+                >
                   <User className="h-4 w-4" />
                   <span>Личный кабинет</span>
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -117,5 +117,3 @@ export function Header() {
     </header>
   )
 }
-
-

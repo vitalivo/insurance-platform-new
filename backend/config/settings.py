@@ -9,28 +9,49 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+
 import os
 from pathlib import Path
 from decouple import config
+import ssl
+from django.core.mail.backends.smtp import EmailBackend
+
+class CustomSMTPBackend(EmailBackend):
+    def open(self):
+        if self.connection:
+            return False
+        try:
+            self.connection = self.connection_class(
+                host=self.host, port=self.port, timeout=self.timeout
+            )
+            if self.use_tls:
+                context = ssl.create_default_context()
+                context.check_hostname = False
+                context.verify_mode = ssl.CERT_NONE
+                self.connection.starttls(context=context)
+            if self.username and self.password:
+                self.connection.login(self.username, self.password)
+            return True
+        except Exception:
+            if not self.fail_silently:
+                raise
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,192.168.56.1').split(',')
 
-
 # Application definition
-
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,7 +74,7 @@ LOCAL_APPS = [
     'apps.notifications',
 ]
 
-INSTALLED_APPS = INSTALLED_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -86,8 +107,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
-# Database
+# Database - ВОЗВРАЩАЕМ PostgreSQL
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -99,10 +119,7 @@ DATABASES = {
     }
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -117,7 +134,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 LANGUAGE_CODE = 'ru-ru'
@@ -152,20 +168,49 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'http://192.168.56.1:3000',  # Добавлено!
+    'http://192.168.56.1:3000',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # В разработке разрешаем все origins
 
-# Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.yandex.ru')
+# ИСПРАВЛЕНО: убираем пробел и правильно настраиваем
+CORS_ALLOW_ALL_ORIGINS = True  # В разработке разрешаем все origins
+
+CORS_ALLOWED_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Email settings - ИСПОЛЬЗУЕМ КАСТОМНЫЙ BACKEND
+EMAIL_BACKEND = 'config.settings.CustomSMTPBackend'  # Указываем путь к нашему классу
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@insurance.ru')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@strahplatforma.ru')
+EMAIL_TIMEOUT = 30
+# ИСПРАВЛЕНИЕ SSL ПРОБЛЕМ В РАЗРАБОТКЕ
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None
+EMAIL_TIMEOUT = 30
+
+# Для отладки можно временно использовать консоль:
+if config('USE_CONSOLE_EMAIL', default=False, cast=bool):
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Notification settings
+ADMIN_EMAIL = config('ADMIN_EMAIL', default='admin@strahplatforma.ru')
+SITE_NAME = config('SITE_NAME', default='СтрахПлатформа')
+SITE_URL = config('SITE_URL', default='http://localhost:3000')
 
 # Telegram settings
 TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN', default='')
@@ -179,23 +224,57 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-# Logging
+# Logging - ИСПРАВЛЕНО для поддержки Unicode
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'logs' / 'django.log',
+            'formatter': 'verbose',
+            'encoding': 'utf-8',  # Добавлено для поддержки Unicode
         },
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
     },
-    'root': {
-        'handlers': ['console', 'file'],
-        'level': 'INFO',
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'apps.applications': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'apps.notifications': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
     },
 }
+
+# Создаем директорию для логов
+os.makedirs(BASE_DIR / 'logs', exist_ok=True)
+
+
+# В конец файла settings.py добавьте:
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context

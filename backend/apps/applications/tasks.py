@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.conf import settings
 from apps.applications.models import Application
-from .services import EmailService, TelegramService
+from apps.notifications.services import EmailService, TelegramService
 import logging
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ def send_application_notifications(self, application_id: int):
         except Exception as e:
             logger.error(f"Ошибка отправки email клиенту: {e}")
         
-        # Отправляем email администратору (если настроен)
+        # Отправляем email администратору
         try:
             admin_email = getattr(settings, 'ADMIN_EMAIL', None)
             if admin_email:
